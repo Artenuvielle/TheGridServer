@@ -2,6 +2,8 @@
 #ifndef _Disk_H_
 #define _Disk_H_
 
+#include "Observer.h"
+
 #include "Common.h"
 #include "Shield.h"
 
@@ -17,7 +19,7 @@ public:
 	virtual void handleDiskCatch() = 0;
 };
 
-class Disk {
+class Disk : public Observable<GameNotifications> {
 public:
 	bool setPosition(Vec3f newPosition);
 	Vec3f getPosition();
@@ -29,10 +31,12 @@ public:
 	void setEnemyShield(Shield* enemyShield);
 	Quaternion getRotation();
 	DiskState getState();
+	Vec3f getMomentum();
 
 	bool startDraw(Vec3f pos);
 	bool endDraw(Vec3f pos);
 	bool forceReturn();
+	bool forceThrow(Vec3f pos, Vec3f momentum);
 	void catchDisk();
 	void update();
 	Disk(PlayerFaction type, DiskEventHandler* handler);

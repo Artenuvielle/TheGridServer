@@ -54,13 +54,19 @@ Real32 Shield::getRadius() {
 void Shield::reduceCharges() {
 	if (charges > 0) {
 		charges--;
+		notify(GAME_NOTIFICATION_PLAYER_CHANGED_SHIELD_CHARGE);
 	}
 }
 
 void Shield::refillCharges() {
 	charges = shieldMaximumCharges;
+	notify(GAME_NOTIFICATION_PLAYER_CHANGED_SHIELD_CHARGE);
 }
 
 bool Shield::hasCharges() {
 	return charges > 0;
+}
+
+Int32 Shield::getCharges() {
+	return charges;
 }

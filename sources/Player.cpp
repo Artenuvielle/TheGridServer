@@ -15,6 +15,8 @@ Player::Player(PlayerFaction faction) : faction(faction) {
 
 	disk = new Disk(faction, this);
 	shield = new Shield(faction);
+	disk->attach(this);
+	shield->attach(this);
 
 	torsoTransform.setScale(Vec3f(PLAYER_GEOMETRY_SCALE, PLAYER_GEOMETRY_SCALE, PLAYER_GEOMETRY_SCALE) * 1.3);
 	headTransform.setScale(Vec3f(PLAYER_GEOMETRY_SCALE, PLAYER_GEOMETRY_SCALE, PLAYER_GEOMETRY_SCALE));
@@ -62,12 +64,11 @@ void Player::update() {
 void Player::loseLife() {
 	if (gameRunning) {
 		life -= 1;
-		//createWallAnimationsForScores(faction);
 		if (life == 0) {
-			// game over
 			gameRunning = false;
-			std::cout << "Game over" << '\n';
+			std::cout << "Game over" << std::endl;
 		}
+		notify(GAME_NOTIFICATION_PLAYER_CHANGED_LIFE);
 	}
 }
 
@@ -166,6 +167,11 @@ Shield* Player::getShield() {
 
 void Player::setLifeCount(Int32 count) {
 	life = count;
+	notify(GAME_NOTIFICATION_PLAYER_CHANGED_LIFE);
+}
+
+Int32 Player::getLifeCount() {
+	return life;
 }
 
 void Player::handleDiskCatch() {

@@ -100,7 +100,6 @@ void AI::setState(AIState newState) {
 		break;
 	}
 	state = newState;
-	std::cout << "AI changed state to " << AIStateNames[state] << '\n';
 }
 
 AI::~AI() {

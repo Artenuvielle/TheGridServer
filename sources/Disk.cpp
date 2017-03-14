@@ -78,6 +78,10 @@ DiskState Disk::getState() {
 	return state;
 }
 
+Vec3f Disk::getMomentum() {
+	return momentum;
+}
+
 bool Disk::startDraw(Vec3f position) {
 	if(gameRunning && state == DISK_STATE_READY) {
 		lastPositionWhileDrawn = position;
@@ -97,6 +101,7 @@ bool Disk::endDraw(Vec3f position) {
 		lastCollisionAngle = targetAngle;
 		currentAngle = targetAngle;
 		axialRotationPerMillisecond = 0;
+		notify(GAME_NOTIFICATION_DISK_THROWN);
 		std::cout << "finished drawing a disk... LET IF FLYYYYYY" << '\n';
 		
 		return true;
@@ -108,6 +113,16 @@ bool Disk::forceReturn() {
 	if (state == DISK_STATE_FREE_FLY) {
 		state = DISK_STATE_RETURNING;
 		return true;
+	}
+	return false;
+}
+
+bool Disk::forceThrow(Vec3f position, Vec3f mom) {
+	if (startDraw(position)) {
+		momentum = mom;
+		if (endDraw(position)) {
+			return true;
+		}
 	}
 	return false;
 }

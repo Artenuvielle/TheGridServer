@@ -68,4 +68,11 @@ const Real32 lightTrailInputPointMinDistance = 20.f;
 extern bool gameRunning;
 extern Real32 elapsedTime;
 
+enum GameNotifications {
+	GAME_NOTIFICATION_PLAYER_CHANGED_LIFE = 0,
+	GAME_NOTIFICATION_PLAYER_CHANGED_SHIELD_CHARGE,
+	GAME_NOTIFICATION_DISK_STATE_CHANGED,
+	GAME_NOTIFICATION_DISK_THROWN
+};
+
 #endif

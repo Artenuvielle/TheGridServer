@@ -2,11 +2,13 @@
 #ifndef _Player_H_
 #define _Player_H_
 
+#include "Observer.h"
+
 #include "Common.h"
 #include "Disk.h"
 #include "Shield.h"
 
-class Player : public DiskEventHandler {
+class Player : public DiskEventHandler, public ObservablePropagator<GameNotifications> {
 public:
 	Player* getEnemy();
 	void setEnemy(Player* newEnemy);
@@ -27,6 +29,7 @@ public:
 	Disk* getDisk();
 	Shield* getShield();
 	void setLifeCount(Int32 count);
+	Int32 getLifeCount();
 	void handleDiskCatch();
 	Player(PlayerFaction faction);
 	~Player();
