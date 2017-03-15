@@ -1,7 +1,7 @@
 #include <iostream>
 #include <enet/enet.h>
 
-#define OUTPUT_TICKS_EVERY_MILLISECONDS 10000
+//#define OUTPUT_TICKS_EVERY_MILLISECONDS 10000
 
 #include "Network.h"
 #include "Game.h"

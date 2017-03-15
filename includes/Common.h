@@ -29,8 +29,8 @@ const Real32 PLAYER_TORSO_HEAD_OFFSET = 10;
 const Real32 PLAYER_GEOMETRY_SCALE = 2;
 
 const Int32 lifeCounterMaxLife = 4;
-const Real32 lifeCounterMaxTransparency = 0.3;
-const Real32 lifeCounterTransparencyChangeTime = 0.2; // s
+const Real32 lifeCounterMaxTransparency = 0.3f;
+const Real32 lifeCounterTransparencyChangeTime = 0.2f; // s
 
 const Real32 diskRadius = 15; // cm
 const Real32 diskHeight = 3; // cm

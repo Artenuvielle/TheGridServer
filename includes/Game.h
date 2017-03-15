@@ -25,9 +25,9 @@ public:
 private:
 	void broadcastPlayerPositions(Player* player, PlayerFaction faction, int playerId);
 	Server *_server;
-	Player *playerBlue, *playerOrange;
-	AI *aiBlue, *aiOrange;
-	int playerBluePeer, playerOrangePeer;
+	Player *_playerBlue, *_playerOrange;
+	AI *_aiBlue, *_aiOrange;
+	int _playerBluePeer, _playerOrangePeer;
 };
 
 #endif

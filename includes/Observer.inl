@@ -3,7 +3,7 @@
 template <class NotificationTypeT> inline
 bool Observable<NotificationTypeT>::notify(NotificationTypeT notification) {
 	bool ret = true;
-	for (int i = 0; i < _views.size(); i++) {
+	for (unsigned int i = 0; i < _views.size(); i++) {
 		ret = _views[i]->observableUpdate(notification, this) && ret;
 	}
 	if (!ret) {
@@ -14,7 +14,7 @@ bool Observable<NotificationTypeT>::notify(NotificationTypeT notification) {
 
 template <class NotificationTypeT> inline
 void Observable<NotificationTypeT>::revoke(NotificationTypeT notification) {
-	for (int i = 0; i < _views.size(); i++) {
+	for (unsigned int i = 0; i < _views.size(); i++) {
 		_views[i]->observableRevoke(notification, this);
 	}
 }

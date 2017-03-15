@@ -6,8 +6,8 @@ Server::Server(unsigned int hostAdress, short port) {
 	_enetAddress.host = hostAdress;
 	_enetAddress.port = port;
 
-	_enetServer = enet_host_create (& _enetAddress, 2, 2, 0, 0);
-	if (_enetServer == NULL)
+	_enetHost = enet_host_create (&_enetAddress, 2, 2, 0, 0);
+	if (_enetHost == NULL)
 	{
 		std::cerr << "An error occurred while trying to create an ENet server host" << std::endl;
 		exit (EXIT_FAILURE);
@@ -18,7 +18,7 @@ Server::Server(unsigned int hostAdress, short port) {
 
 Server::~Server() {
 	std::cout << "Shutting down server." << std::endl;
-	enet_host_destroy(_enetServer);
+	enet_host_destroy(_enetHost);
 }
 
 void Server::setPacketHandler(CToSPacketHandler* handler) {
@@ -33,7 +33,7 @@ void Server::pollNetworkEvents() {
 	ENetEvent event;
 	CToSPacketType* header;
 	void* actualData;
-	while (enet_host_service (_enetServer, &event, 0) > 0) {
+	while (enet_host_service (_enetHost, &event, 0) > 0) {
 		switch (event.type) 	{
 		case ENET_EVENT_TYPE_CONNECT:
 			std::cout << "A new client connected from "
@@ -72,7 +72,7 @@ void Server::sendPacket(unsigned short peerId, SToCPacketType header, void* data
 	memcpy((reinterpret_cast<unsigned char *>(packetData) + sizeof(SToCPacketType)), data, size);
 	ENetPacket* packet = enet_packet_create(packetData, size + sizeof(SToCPacketType), reliable ? ENET_PACKET_FLAG_RELIABLE : 0);
 	enet_peer_send(_peers[peerId], 0, packet);
-	enet_host_flush(_enetServer);
+	enet_host_flush(_enetHost);
 	free(packetData);
 }
 
@@ -81,7 +81,7 @@ void Server::broadcastPacket(SToCPacketType header, void* data, int size, bool r
 	memcpy(packetData, &header, sizeof(SToCPacketType));
 	memcpy((reinterpret_cast<unsigned char *>(packetData) + sizeof(SToCPacketType)), data, size);
 	ENetPacket* packet = enet_packet_create(packetData, size + sizeof(SToCPacketType), reliable ? ENET_PACKET_FLAG_RELIABLE : 0);
-	enet_host_broadcast(_enetServer, 0, packet);
-	enet_host_flush(_enetServer);
+	enet_host_broadcast(_enetHost, 0, packet);
+	enet_host_flush(_enetHost);
 	free(packetData);
 }

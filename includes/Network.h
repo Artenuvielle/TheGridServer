@@ -28,7 +28,7 @@ private:
 	CToSPacketHandler* _packetHandler;
 
 	ENetAddress _enetAddress;
-	ENetHost* _enetServer;
+	ENetHost* _enetHost;
 	std::map<enet_uint16, ENetPeer*> _peers;
 };
 

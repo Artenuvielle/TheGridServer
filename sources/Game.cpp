@@ -2,22 +2,22 @@
 
 GameManager::GameManager(Server* server) {
 	_server = server;
-	playerBlue = new Player(PLAYER_FACTION_BLUE);
-	playerOrange = new Player(PLAYER_FACTION_ORANGE);
-	playerBlue->setEnemy(playerOrange);
-	playerOrange->setEnemy(playerBlue);
-	playerBlue->attach(this);
-	playerOrange->attach(this);
-	aiBlue = new AI(playerBlue);
-	aiOrange = new AI(playerOrange);
-	playerBluePeer = -1;
-	playerOrangePeer = -1;
+	_playerBlue = new Player(PLAYER_FACTION_BLUE);
+	_playerOrange = new Player(PLAYER_FACTION_ORANGE);
+	_playerBlue->setEnemy(_playerOrange);
+	_playerOrange->setEnemy(_playerBlue);
+	_playerBlue->attach(this);
+	_playerOrange->attach(this);
+	_aiBlue = new AI(_playerBlue);
+	_aiOrange = new AI(_playerOrange);
+	_playerBluePeer = -1;
+	_playerOrangePeer = -1;
 }
 
 GameManager::~GameManager() {
-	delete aiBlue, aiOrange;
-	delete playerBlue;
-	delete playerOrange;
+	delete _aiBlue, _aiOrange;
+	delete _playerBlue;
+	delete _playerOrange;
 }
 
 void GameManager::broadcastPlayerPositions(Player* player, PlayerFaction faction, int playerId) {
@@ -47,20 +47,20 @@ void throwPlayerDisk(Player* player, DiskThrowInformation* info) {
 }
 
 void GameManager::handleGameTick() {
-	if (playerBluePeer < 0) {
-		aiBlue->update();
+	if (_playerBluePeer < 0) {
+		_aiBlue->update();
 	}
-	if (playerOrangePeer < 0) {
-		aiOrange->update();
+	if (_playerOrangePeer < 0) {
+		_aiOrange->update();
 	}
-	playerBlue->update();
-	playerOrange->update();
-	broadcastPlayerPositions(playerBlue, PLAYER_FACTION_BLUE, playerBluePeer);
-	if (playerBlue->getDisk()->getState() == DISK_STATE_FREE_FLY || playerBlue->getDisk()->getState() == DISK_STATE_RETURNING) {
+	_playerBlue->update();
+	_playerOrange->update();
+	broadcastPlayerPositions(_playerBlue, PLAYER_FACTION_BLUE, _playerBluePeer);
+	if (_playerBlue->getDisk()->getState() == DISK_STATE_FREE_FLY || _playerBlue->getDisk()->getState() == DISK_STATE_RETURNING) {
 		// send disk position
 	}
-	broadcastPlayerPositions(playerOrange, PLAYER_FACTION_ORANGE, playerOrangePeer);
-	if (playerOrange->getDisk()->getState() == DISK_STATE_FREE_FLY || playerOrange->getDisk()->getState() == DISK_STATE_RETURNING) {
+	broadcastPlayerPositions(_playerOrange, PLAYER_FACTION_ORANGE, _playerOrangePeer);
+	if (_playerOrange->getDisk()->getState() == DISK_STATE_FREE_FLY || _playerOrange->getDisk()->getState() == DISK_STATE_RETURNING) {
 		// send disk position
 	}
 }
@@ -68,11 +68,11 @@ void GameManager::handleGameTick() {
 void GameManager::handleConnect(unsigned short peerId) {
 	PlayerInformation info;
 	info.playerId = peerId;
-	if (playerBluePeer < 0) {
-		playerBluePeer = peerId;
+	if (_playerBluePeer < 0) {
+		_playerBluePeer = peerId;
 		info.factionId = PLAYER_FACTION_BLUE;
-	} else if (playerOrangePeer < 0) {
-		playerOrangePeer = peerId;
+	} else if (_playerOrangePeer < 0) {
+		_playerOrangePeer = peerId;
 		info.factionId = PLAYER_FACTION_ORANGE;
 	} else {
 		// new connection on full server
@@ -82,12 +82,12 @@ void GameManager::handleConnect(unsigned short peerId) {
 }
 
 void GameManager::handleDisconnect(unsigned short peerId) {
-	if (playerBluePeer == peerId) {
-		playerBluePeer = -1;
-		aiBlue->resetState();
-	} else if (playerOrangePeer == peerId) {
-		playerOrangePeer = -1;
-		aiOrange->resetState();
+	if (_playerBluePeer == peerId) {
+		_playerBluePeer = -1;
+		_aiBlue->resetState();
+	} else if (_playerOrangePeer == peerId) {
+		_playerOrangePeer = -1;
+		_aiOrange->resetState();
 	} else {
 		// connection not known on this server
 		return;
@@ -99,12 +99,12 @@ void GameManager::handleCToSPacket(unsigned short peerId, CToSPacketType* header
 	case CTOS_PACKET_TYPE_START_GAME_REQUEST:
 		std::cout << "Start request header: " << gameRunning << std::endl;
 		if (!gameRunning) {
-			playerBlue->setLifeCount(lifeCounterMaxLife);
-			playerBlue->getShield()->refillCharges();
-			playerOrange->setLifeCount(lifeCounterMaxLife);
-			playerOrange->getShield()->refillCharges();
-			aiBlue->resetState();
-			aiOrange->resetState();
+			_playerBlue->setLifeCount(lifeCounterMaxLife);
+			_playerBlue->getShield()->refillCharges();
+			_playerOrange->setLifeCount(lifeCounterMaxLife);
+			_playerOrange->getShield()->refillCharges();
+			_aiBlue->resetState();
+			_aiOrange->resetState();
 			std::cout << "Game starting, have fun :)" << std::endl;
 			gameRunning = true;
 			GameInformation gi;
@@ -115,20 +115,20 @@ void GameManager::handleCToSPacket(unsigned short peerId, CToSPacketType* header
 		}
 		break;
 	case CTOS_PACKET_TYPE_PLAYER_POSITION_INFORMATION:
-		if (playerBluePeer == peerId) {
-			setPlayerPositions(playerBlue, reinterpret_cast<PlayerPosition*>(data));
-		} else if (playerOrangePeer == peerId) {
-			setPlayerPositions(playerOrange, reinterpret_cast<PlayerPosition*>(data));
+		if (_playerBluePeer == peerId) {
+			setPlayerPositions(_playerBlue, reinterpret_cast<PlayerPosition*>(data));
+		} else if (_playerOrangePeer == peerId) {
+			setPlayerPositions(_playerOrange, reinterpret_cast<PlayerPosition*>(data));
 		} else {
 			// connection not known on this server
 			return;
 		}
 		break;
 	case CTOS_PACKET_TYPE_PLAYER_THROW_INFORMATION:
-		if (playerBluePeer == peerId) {
-			throwPlayerDisk(playerBlue, reinterpret_cast<DiskThrowInformation*>(data));
-		} else if (playerOrangePeer == peerId) {
-			throwPlayerDisk(playerOrange, reinterpret_cast<DiskThrowInformation*>(data));
+		if (_playerBluePeer == peerId) {
+			throwPlayerDisk(_playerBlue, reinterpret_cast<DiskThrowInformation*>(data));
+		} else if (_playerOrangePeer == peerId) {
+			throwPlayerDisk(_playerOrange, reinterpret_cast<DiskThrowInformation*>(data));
 		} else {
 			// connection not known on this server
 			return;
@@ -144,15 +144,15 @@ bool GameManager::observableUpdate(GameNotifications notification, Observable<Ga
 	Player* srcPlayer = nullptr;
 	int srcPeer;
 	PlayerFaction srcFaction;
-	if (playerBlue == src) {
+	if (_playerBlue == src) {
 		std::cout << "Game event (blue): " << notification << std::endl;
-		srcPlayer = playerBlue;
-		srcPeer = playerBluePeer;
+		srcPlayer = _playerBlue;
+		srcPeer = _playerBluePeer;
 		srcFaction = PLAYER_FACTION_BLUE;
 	} else {
 		std::cout << "Game event (orange): " << notification << std::endl;
-		srcPlayer = playerOrange;
-		srcPeer = playerOrange;
+		srcPlayer = _playerOrange;
+		srcPeer = _playerOrangePeer;
 		srcFaction = PLAYER_FACTION_ORANGE;
 	}
 	if (srcPlayer != nullptr) {
@@ -182,7 +182,7 @@ bool GameManager::observableUpdate(GameNotifications notification, Observable<Ga
 }
 
 void GameManager::observableRevoke(GameNotifications notification, Observable<GameNotifications>* src) {
-	if (playerBlue == src) {
+	if (_playerBlue == src) {
 		std::cout << "Game event revoked (blue): " << notification << std::endl;
 	} else {
 		std::cout << "Game event revoked (orange): " << notification << std::endl;
