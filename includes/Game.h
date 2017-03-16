@@ -17,7 +17,7 @@ public:
 
 	void handleConnect(unsigned short peerId) override;
 	void handleDisconnect(unsigned short peerId) override;
-	void handleCToSPacket(unsigned short peerId, CToSPacketType* header, void* data, int size) override;
+	void handleCToSPacket(unsigned short peerId, CToSPacketType* header, std::string data) override;
 
 	bool observableUpdate(GameNotifications notification, Observable<GameNotifications>* src) override;
 	void observableRevoke(GameNotifications notification, Observable<GameNotifications>* src) override;

@@ -9,7 +9,7 @@ set(EXECUTABLE_OUTPUT_PATH ../exe/)
 set(SOURCE_DIR sources/)
 set(HEADER_DIR includes/)
 
-file(GLOB_RECURSE SRCS "${SOURCE_DIR}*.cpp")
+file(GLOB_RECURSE SRCS "${SOURCE_DIR}*.c*")
 file(GLOB_RECURSE INCS "${HEADER_DIR}*.h" "${HEADER_DIR}*.inl")
 
 #link_directories(${CMAKE_CURRENT_LIST_DIR}/exe/${CMAKE_CONFIGURATION_TYPES}/)
@@ -26,6 +26,16 @@ target_link_libraries(${PROJECT_NAME} enet)
 if(WIN32)
 	target_link_libraries(${PROJECT_NAME} winmm.lib ws2_32.lib)
 endif()
+
+target_include_directories(${PROJECT_NAME} PUBLIC "proto/out/")
+
+
+set(protobuf_BUILD_TESTS OFF)
+set(protobuf_MSVC_STATIC_RUNTIME OFF)
+add_subdirectory(protobuf/cmake)
+target_include_directories(${PROJECT_NAME} PUBLIC "protobuf/src/")
+target_link_libraries(${PROJECT_NAME} libprotobuf)
+
 
 if(WIN32)
 	file(WRITE start_server_${CMAKE_CONFIGURATION_TYPES}.bat ".\\exe\\${CMAKE_CONFIGURATION_TYPES}\\${PROJECT_NAME}.exe" )

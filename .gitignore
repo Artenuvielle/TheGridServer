@@ -1,6 +1,8 @@
 build_user/
-cache/
 exe/
+includes/*.pb.h
+proto/out/
+sources/*.pb.cc
 start_server_Release.bat
 start_vs_user.lnk
 *Thumbs.db

@@ -32,7 +32,7 @@ CToSPacketHandler* Server::getPacketHandler() {
 void Server::pollNetworkEvents() {
 	ENetEvent event;
 	CToSPacketType* header;
-	void* actualData;
+	std::string serializedData;
 	while (enet_host_service (_enetHost, &event, 0) > 0) {
 		switch (event.type) 	{
 		case ENET_EVENT_TYPE_CONNECT:
@@ -47,9 +47,9 @@ void Server::pollNetworkEvents() {
 			break;
 		case ENET_EVENT_TYPE_RECEIVE:
 			header = reinterpret_cast<CToSPacketType*>(event.packet->data);
-			actualData = reinterpret_cast<void*>(header + 1);
+			serializedData = std::string(reinterpret_cast<const char*>(event.packet->data + sizeof(CToSPacketType)), event.packet->dataLength - sizeof(CToSPacketType));
 			if (_packetHandler != nullptr) {
-				_packetHandler->handleCToSPacket(event.peer->incomingPeerID, header, actualData, event.packet->dataLength - sizeof(CToSPacketType));
+				_packetHandler->handleCToSPacket(event.peer->incomingPeerID, header, serializedData);
 			}
 			enet_packet_destroy(event.packet);
 			break;
@@ -64,24 +64,4 @@ void Server::pollNetworkEvents() {
 			event.peer->data = NULL;
 		}
 	}
-}
-
-void Server::sendPacket(unsigned short peerId, SToCPacketType header, void* data, int size, bool reliable) {
-	void* packetData = malloc(size + sizeof(SToCPacketType));
-	memcpy(packetData, &header, sizeof(SToCPacketType));
-	memcpy((reinterpret_cast<unsigned char *>(packetData) + sizeof(SToCPacketType)), data, size);
-	ENetPacket* packet = enet_packet_create(packetData, size + sizeof(SToCPacketType), reliable ? ENET_PACKET_FLAG_RELIABLE : 0);
-	enet_peer_send(_peers[peerId], 0, packet);
-	enet_host_flush(_enetHost);
-	free(packetData);
-}
-
-void Server::broadcastPacket(SToCPacketType header, void* data, int size, bool reliable) {
-	void* packetData = malloc(size + sizeof(SToCPacketType));
-	memcpy(packetData, &header, sizeof(SToCPacketType));
-	memcpy((reinterpret_cast<unsigned char *>(packetData) + sizeof(SToCPacketType)), data, size);
-	ENetPacket* packet = enet_packet_create(packetData, size + sizeof(SToCPacketType), reliable ? ENET_PACKET_FLAG_RELIABLE : 0);
-	enet_host_broadcast(_enetHost, 0, packet);
-	enet_host_flush(_enetHost);
-	free(packetData);
 }

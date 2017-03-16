@@ -4,6 +4,7 @@
 //#define OUTPUT_TICKS_EVERY_MILLISECONDS 10000
 
 #include "Network.h"
+#include "NetworkPackets.h"
 #include "Game.h"
 #include "Player.h"
 
@@ -29,7 +30,9 @@ int main (int argc, char ** argv) {
         std::cerr << "An error occurred while initializing ENet." << std::endl;
         throw 0;
     }
-    atexit(onClose);
+    atexit(onClose);	
+	GOOGLE_PROTOBUF_VERIFY_VERSION;
+
 	elapsedTime = 0;
 
 	Player a(userFaction);
