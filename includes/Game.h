@@ -24,6 +24,9 @@ public:
 
 private:
 	void broadcastPlayerPositions(Player* player, PlayerFaction faction, int playerId);
+	void sendPlayerPositionsToPeer(Player* player, PlayerFaction faction, int playerId, int peerId);
+	void broadcastDiscThrowInformation(Player* player, PlayerFaction faction, int playerId);
+	void sendDiscThrowInformationToPeer(Player* player, PlayerFaction faction, int playerId, int peerId);
 	Server *_server;
 	Player *_playerBlue, *_playerOrange;
 	AI *_aiBlue, *_aiOrange;

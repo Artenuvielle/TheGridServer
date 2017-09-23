@@ -1,14 +1,27 @@
 #include "Game.h"
 
-PositionPacketType createPosition(Vec3f pos) {
-    PositionPacketType ret;
+PositionPacketType createPosition(Vec3f originPos, PlayerFaction faction, bool isDirection = false) {
+	Vec3f pos = originPos;
+	if (faction == enemyFaction) {
+		if (isDirection) {
+			Quaternion(Vec3f(0,1,0), 180).multVec(originPos, pos);
+		} else {
+			Quaternion(Vec3f(0,1,0), 180).multVec(originPos - Vec3f(0, 135, -305), pos);
+			pos = pos + Vec3f(0, 135, -305);
+		}
+	}
+	PositionPacketType ret;
     ret.set_x(pos.x());
     ret.set_y(pos.y());
     ret.set_z(pos.z());
     return ret;
 }
 
-OrientationPacketType createOrientation(Quaternion rot) {
+OrientationPacketType createOrientation(Quaternion originRot, PlayerFaction faction) {
+	Quaternion rot = originRot;
+	if (faction == enemyFaction) {
+		rot = originRot * Quaternion(Vec3f(0,1,0), 180);
+	}
     OrientationPacketType ret;
     ret.set_x(rot.x());
     ret.set_y(rot.y());
@@ -17,11 +30,24 @@ OrientationPacketType createOrientation(Quaternion rot) {
     return ret;
 }
 
-Vec3f createVector(PositionPacketType pos) {
+Vec3f createVector(PositionPacketType pos, PlayerFaction faction, bool isDirection = false) {
+	if (faction == enemyFaction) {
+		Vec3f rotatedPos;
+		if (isDirection) {
+			Quaternion(Vec3f(0,1,0), 180).multVec(Vec3f(pos.x(), pos.y(), pos.z()), rotatedPos);
+			return rotatedPos;
+		} else {
+			Quaternion(Vec3f(0,1,0), 180).multVec(Vec3f(pos.x(), pos.y() - 135, pos.z() + 305), rotatedPos);
+			return rotatedPos + Vec3f(0, 135, -305);
+		}
+	}
 	return Vec3f(pos.x(), pos.y(), pos.z());
 }
 
-Quaternion createQuaternion(OrientationPacketType rot) {
+Quaternion createQuaternion(OrientationPacketType rot, PlayerFaction faction) {
+	if (faction == enemyFaction) {
+		return Quaternion(rot.x(), rot.y(), rot.z(), rot.w()) * Quaternion(Vec3f(0,1,0), 180);
+	}
 	return Quaternion(rot.x(), rot.y(), rot.z(), rot.w());
 }
 
@@ -33,16 +59,16 @@ S* deserialize(std::string serializedData) {
 }
 
 void setPlayerPositions(Player* player, PlayerPosition* pos) {
-	player->setHeadPosition(createVector(pos->head_pos()));
-	player->setHeadRotation(createQuaternion(pos->head_rot()));
-	player->setDiskArmPosition(createVector(pos->main_hand_pos()));
-	player->setDiskArmRotation(createQuaternion(pos->main_hand_rot()));
-	player->setShieldArmPosition(createVector(pos->off_hand_pos()));
-	player->setShieldArmRotation(createQuaternion(pos->off_hand_rot()));
+	player->setHeadPosition(createVector(pos->head_pos(), player->getFaction()));
+	player->setHeadRotation(createQuaternion(pos->head_rot(), player->getFaction()));
+	player->setDiskArmPosition(createVector(pos->main_hand_pos(), player->getFaction()));
+	player->setDiskArmRotation(createQuaternion(pos->main_hand_rot(), player->getFaction()));
+	player->setShieldArmPosition(createVector(pos->off_hand_pos(), player->getFaction()));
+	player->setShieldArmRotation(createQuaternion(pos->off_hand_rot(), player->getFaction()));
 }
 
 void throwPlayerDisk(Player* player, DiskThrowInformation* info) {
-	player->getDisk()->forceThrow(createVector(info->disk_pos()), createVector(info->disk_momentum()));
+	player->getDisk()->forceThrow(createVector(info->disk_pos(), player->getFaction()), createVector(info->disk_momentum(), player->getFaction(), true));
 }
 
 GameManager::GameManager(Server* server) {
@@ -66,22 +92,32 @@ GameManager::~GameManager() {
 }
 
 void GameManager::broadcastPlayerPositions(Player* player, PlayerFaction faction, int playerId) {
+	if (_playerBluePeer >= 0) {
+		sendPlayerPositionsToPeer(player, faction, playerId, _playerBluePeer);
+	}
+	if (_playerOrangePeer >= 0) {
+		sendPlayerPositionsToPeer(player, faction, playerId, _playerOrangePeer);
+	}
+}
+
+void GameManager::sendPlayerPositionsToPeer(Player* player, PlayerFaction faction, int playerId, int peerId) {
+	PlayerFaction receivingFaction = peerId == _playerBluePeer ? PLAYER_FACTION_BLUE : PLAYER_FACTION_ORANGE;
 	PlayerPosition* pp = new PlayerPosition();
 	pp->set_player_id(playerId);
 	pp->set_faction_id(faction);
-	PositionPacketType head_pos = createPosition(player->getHeadPosition());
-	PositionPacketType main_hand_pos = createPosition(player->getDiskArmPosition());
-	PositionPacketType off_hand_pos = createPosition(player->getShieldArmPosition());
-	OrientationPacketType head_rot = createOrientation(player->getHeadRotation());
-	OrientationPacketType main_hand_rot = createOrientation(player->getDiskArmRotation());
-	OrientationPacketType off_hand_rot = createOrientation(player->getShieldArmRotation());
+	PositionPacketType head_pos = createPosition(player->getHeadPosition(), receivingFaction);
+	PositionPacketType main_hand_pos = createPosition(player->getDiskArmPosition(), receivingFaction);
+	PositionPacketType off_hand_pos = createPosition(player->getShieldArmPosition(), receivingFaction);
+	OrientationPacketType head_rot = createOrientation(player->getHeadRotation(), receivingFaction);
+	OrientationPacketType main_hand_rot = createOrientation(player->getDiskArmRotation(), receivingFaction);
+	OrientationPacketType off_hand_rot = createOrientation(player->getShieldArmRotation(), receivingFaction);
 	pp->set_allocated_head_pos(&head_pos);
 	pp->set_allocated_head_rot(&head_rot);
 	pp->set_allocated_main_hand_pos(&main_hand_pos);
 	pp->set_allocated_main_hand_rot(&main_hand_rot);
 	pp->set_allocated_off_hand_pos(&off_hand_pos);
 	pp->set_allocated_off_hand_rot(&off_hand_rot);
-	_server->broadcastPacket<PlayerPosition>(STOC_PACKET_TYPE_PLAYER_POSITION_BROADCAST, pp);
+	_server->sendPacket(peerId, STOC_PACKET_TYPE_PLAYER_POSITION_BROADCAST, pp);
 }
 
 void GameManager::handleGameTick() {
@@ -208,17 +244,31 @@ bool GameManager::observableUpdate(GameNotifications notification, Observable<Ga
 			_server->broadcastPacket<PlayerCounterInformation>(STOC_PACKET_TYPE_PLAYER_CHANGED_SHIELD_CHARGE_BROADCAST, pci, true);
 		} else if (notification == GAME_NOTIFICATION_DISK_STATE_CHANGED) {
 		} else if (notification == GAME_NOTIFICATION_DISK_THROWN) {
-			DiskThrowInformation* dti = new DiskThrowInformation();
-			dti->set_player_id(srcPeer);
-			dti->set_faction_id(srcFaction);
-			PositionPacketType diskPosition = createPosition(srcPlayer->getDisk()->getPosition());
-			PositionPacketType diskMomentum = createPosition(srcPlayer->getDisk()->getMomentum());
-			dti->set_allocated_disk_pos(&diskPosition);
-			dti->set_allocated_disk_momentum(&diskMomentum);
-			_server->broadcastPacket<DiskThrowInformation>(STOC_PACKET_TYPE_DISK_THROW_BROADCAST, dti, true);
+			broadcastDiscThrowInformation(srcPlayer, srcFaction, srcPeer);
 		}
 	}
 	return true;
+}
+
+void GameManager::broadcastDiscThrowInformation(Player* player, PlayerFaction faction, int playerId) {
+	if (_playerBluePeer >= 0) {
+		sendDiscThrowInformationToPeer(player, faction, playerId, _playerBluePeer);
+	}
+	if (_playerOrangePeer >= 0) {
+		sendDiscThrowInformationToPeer(player, faction, playerId, _playerOrangePeer);
+	}
+}
+
+void GameManager::sendDiscThrowInformationToPeer(Player* player, PlayerFaction faction, int playerId, int peerId) {
+	PlayerFaction receivingFaction = peerId == _playerBluePeer ? PLAYER_FACTION_BLUE : PLAYER_FACTION_ORANGE;
+	DiskThrowInformation* dti = new DiskThrowInformation();
+	dti->set_player_id(peerId);
+	dti->set_faction_id(faction);
+	PositionPacketType diskPosition = createPosition(player->getDisk()->getPosition(), receivingFaction);
+	PositionPacketType diskMomentum = createPosition(player->getDisk()->getMomentum(), receivingFaction);
+	dti->set_allocated_disk_pos(&diskPosition);
+	dti->set_allocated_disk_momentum(&diskMomentum);
+	_server->sendPacket<DiskThrowInformation>(peerId, STOC_PACKET_TYPE_DISK_THROW_BROADCAST, dti, true);
 }
 
 void GameManager::observableRevoke(GameNotifications notification, Observable<GameNotifications>* src) {
