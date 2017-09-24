@@ -37,12 +37,21 @@ AI::AI(Player* aiTarget) {
 	me = aiTarget;
 	state = AI_STATE_IDLE;
 	stateHandler = new AIIdleState(me);
-	me->setHeadPosition(aiDefaultHeadPosition);
-	me->setHeadRotation(Quaternion());
-	me->setDiskArmPosition(aiDefaultHeadPosition + Vec3f(-25,-60,0));
-	me->setDiskArmRotation(Quaternion(Vec3f(1,0,0), tg_math::degree2Rad(90)) * Quaternion(Vec3f(0,0,1), tg_math::degree2Rad(90)));
-	me->setShieldArmPosition(aiDefaultHeadPosition + Vec3f(25,-60,0));
-	me->setShieldArmRotation(Quaternion(Vec3f(1,0,0), tg_math::degree2Rad(90)) * Quaternion(Vec3f(0,0,1), tg_math::degree2Rad(-90)));
+	if (me->getFaction() == userFaction) {
+		me->setHeadPosition(aiDefaultHeadPositionUser);
+		me->setHeadRotation(Quaternion(Vec3f(0.0, 1.0, 0.0), tg_math::degree2Rad(180)));
+		me->setDiskArmPosition(aiDefaultHeadPositionUser + Vec3f(25,-60,0));
+		me->setDiskArmRotation(Quaternion(Vec3f(1,0,0), tg_math::degree2Rad(90)) * Quaternion(Vec3f(0,0,1), tg_math::degree2Rad(-90)));
+		me->setShieldArmPosition(aiDefaultHeadPositionUser + Vec3f(-25,-60,0));
+		me->setShieldArmRotation(Quaternion(Vec3f(1,0,0), tg_math::degree2Rad(90)) * Quaternion(Vec3f(0,0,1), tg_math::degree2Rad(90)));
+	} else {
+		me->setHeadPosition(aiDefaultHeadPositionEnemy);
+		me->setHeadRotation(Quaternion());
+		me->setDiskArmPosition(aiDefaultHeadPositionEnemy + Vec3f(-25,-60,0));
+		me->setDiskArmRotation(Quaternion(Vec3f(1,0,0), tg_math::degree2Rad(90)) * Quaternion(Vec3f(0,0,1), tg_math::degree2Rad(90)));
+		me->setShieldArmPosition(aiDefaultHeadPositionEnemy + Vec3f(25,-60,0));
+		me->setShieldArmRotation(Quaternion(Vec3f(1,0,0), tg_math::degree2Rad(90)) * Quaternion(Vec3f(0,0,1), tg_math::degree2Rad(-90)));
+	}
 }
 
 Vec3f capMovement(Vec3f start, Vec3f end, Real32 maximalMovement) {

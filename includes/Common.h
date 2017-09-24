@@ -47,7 +47,8 @@ const Real32 shieldGrowStartDistance = 400; // cm
 const Real32 shieldGrowEndDistance = 250; // cm
 const Int32 shieldMaximumCharges = 3;
 
-const Vec3f aiDefaultHeadPosition = Vec3f(0.0,165.0,-810.0);
+const Vec3f aiDefaultHeadPositionEnemy = Vec3f(0.0,165.0,-810.0);
+const Vec3f aiDefaultHeadPositionUser = Vec3f(0.0,165.0,0.0);
 const Real32 aiHeadMaxSpeed = 25.f; // cm/s
 const Real32 aiHeadMaxRotation = 0.8f; // rad/s
 const Real32 aiArmMaxSpeed = 50.f; // cm/s
