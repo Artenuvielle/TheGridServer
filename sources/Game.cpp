@@ -61,8 +61,8 @@ S* deserialize(std::string serializedData) {
 }
 
 void setPlayerPositions(Player* player, PlayerPosition* pos) {
-	/*if (player->getFaction() == enemyFaction) {
-		Quaternion vec = createQuaternion(pos->head_rot(), player->getFaction());
+	/*if (player->getFaction() == userFaction) {
+		Quaternion vec = createQuaternion(pos->main_hand_rot(), player->getFaction());
 		std::cout << "x: " << vec.x() << " y: " << vec.y() << " z: " << vec.z() << " w: " << vec.w() << std::endl;
 	}*/
 	player->setHeadPosition(createVector(pos->head_pos(), player->getFaction()));
@@ -249,6 +249,11 @@ bool GameManager::observableUpdate(GameNotifications notification, Observable<Ga
 			pci->set_counter(srcPlayer->getShield()->getCharges());
 			_server->broadcastPacket<PlayerCounterInformation>(STOC_PACKET_TYPE_PLAYER_CHANGED_SHIELD_CHARGE_BROADCAST, pci, true);
 		} else if (notification == GAME_NOTIFICATION_DISK_STATE_CHANGED) {
+			DiskStatusInformation* dsi = new DiskStatusInformation();
+			dsi->set_player_id(srcPeer);
+			dsi->set_faction_id(srcFaction);
+			dsi->set_disk_status_id(srcPlayer->getDisk()->getState());
+			_server->broadcastPacket<DiskStatusInformation>(STOC_PACKET_TYPE_DISK_STATUS_BROADCAST, dsi, true);
 		} else if (notification == GAME_NOTIFICATION_DISK_THROWN) {
 			broadcastDiscThrowInformation(srcPlayer, srcFaction, srcPeer);
 		}

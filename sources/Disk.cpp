@@ -87,6 +87,7 @@ bool Disk::startDraw(Vec3f position) {
 		lastPositionWhileDrawn = position;
 		momentum = Vec3f(0,0,0);
 		state = DISK_STATE_DRAWN;
+		notify(GAME_NOTIFICATION_DISK_STATE_CHANGED);
 		std::cout << "started drawing a disk" << '\n';
 		return true;
 	}
@@ -96,6 +97,7 @@ bool Disk::startDraw(Vec3f position) {
 bool Disk::endDraw(Vec3f position) {
 	if(state == DISK_STATE_DRAWN) {
 		state = DISK_STATE_FREE_FLY;
+		notify(GAME_NOTIFICATION_DISK_STATE_CHANGED);
 		momentum.normalize();
 		targetAngle = tg_math::rad2Degree(Vec3f(0,1,0).enclosedAngle(currentAxis));
 		lastCollisionAngle = targetAngle;
@@ -112,6 +114,7 @@ bool Disk::endDraw(Vec3f position) {
 bool Disk::forceReturn() {
 	if (state == DISK_STATE_FREE_FLY) {
 		state = DISK_STATE_RETURNING;
+		notify(GAME_NOTIFICATION_DISK_STATE_CHANGED);
 		return true;
 	}
 	return false;
@@ -130,6 +133,7 @@ bool Disk::forceThrow(Vec3f position, Vec3f mom) {
 void Disk::catchDisk() {
 	rotationAroundAxis = 0;
 	state = DISK_STATE_READY;
+	notify(GAME_NOTIFICATION_DISK_STATE_CHANGED);
 }
 
 Vec3f Disk::calculateMovement(Real32 deltaTime) {
@@ -199,6 +203,7 @@ void Disk::update() {
 				std::cout << "Disk was defended with shield" << '\n';
 				enemyShield->reduceCharges();
 				state = DISK_STATE_RETURNING;
+				notify(GAME_NOTIFICATION_DISK_STATE_CHANGED);
 				// mirror momentum on shield surface
 				Vec3f shieldNormal;
 				enemyShield->getRotation().multVec(Vec3f(0, 1, 0), shieldNormal);
@@ -276,6 +281,7 @@ void Disk::moveDiskAtLeastUntilWallCollision(Real32 deltaTime) {
 		//createAnimationAtCollisionPoint(Vec3f(x,y,WALL_Z_MIN), collisionAnimationSize, COLLISION_WALL_NORMAL_Z, diskType);
 		if (diskType == userFaction) {
 			state = DISK_STATE_RETURNING;
+			notify(GAME_NOTIFICATION_DISK_STATE_CHANGED);
 			std::cout << "player disk returning" << '\n';
 		} else {
 			if (state == DISK_STATE_RETURNING) {
