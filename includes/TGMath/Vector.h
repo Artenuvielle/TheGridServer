@@ -89,5 +89,5 @@ std::ostream& operator <<(std::ostream& out, const Vector<ValueTypeT, SizeI> &ve
 
 typedef Vector<Real32, 3> Vec3f;
 
-#include <TGMath\Vector.inl>
+#include <TGMath/Vector.inl>
 #endif

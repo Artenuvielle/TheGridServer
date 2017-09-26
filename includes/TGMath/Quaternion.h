@@ -156,5 +156,5 @@ std::ostream& operator <<(std::ostream& out, const QuaternionBase<ValueTypeT> &q
 
 typedef QuaternionBase<Real32> Quaternion;
 
-#include <TGMath\Quaternion.inl>
+#include <TGMath/Quaternion.inl>
 #endif
