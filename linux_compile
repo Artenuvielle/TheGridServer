@@ -3,17 +3,27 @@
 if [ ! -d build ]; then
 	mkdir build
 fi
-cd build && \
-cmake -C ../user.cmake \
 if [ -f /lrz/sys/compilers/gcc/5.1.0/bin/gcc ];
 then
+	cd build && \
+	cmake -C ../user.cmake \
 	-DCMAKE_C_COMPILER=/lrz/sys/compilers/gcc/5.1.0/bin/gcc \
 	-DCMAKE_CXX_COMPILER=/lrz/sys/compilers/gcc/5.1.0/bin/g++ \
-fi
--DCMAKE_CXX_FLAGS="-std=c++11" \
-.. && make && cd .. && \
-if [ ! -e start_server_Release ] ; then
-#	echo "#! /bin/bash " > start_demo
-#	echo "./build/main" >> start_demo
-	chmod +x start_*
+	-DCMAKE_CXX_FLAGS="-std=c++11" \
+	.. && make && cd .. && \
+	if [ ! -e start_server_Release ] ; then
+	#	echo "#! /bin/bash " > start_demo
+	#	echo "./build/main" >> start_demo
+		chmod +x start_*
+	fi
+else
+	cd build && \
+	cmake -C ../user.cmake \
+	-DCMAKE_CXX_FLAGS="-std=c++11" \
+	.. && make && cd .. && \
+	if [ ! -e start_server_Release ] ; then
+	#	echo "#! /bin/bash " > start_demo
+	#	echo "./build/main" >> start_demo
+		chmod +x start_*
+	fi
 fi
