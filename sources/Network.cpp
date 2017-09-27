@@ -1,6 +1,14 @@
 #include "Network.h"
 
 #include <iostream>
+#include <string>
+
+template<typename S> inline
+S* deserialize(std::string serializedData) {
+	S* ret = new S();
+	ret->ParseFromString(serializedData);
+	return ret;
+}
 
 Server::Server(unsigned int hostAdress, short port) {
 	_enetAddress.host = hostAdress;
@@ -31,7 +39,7 @@ CToSPacketHandler* Server::getPacketHandler() {
 
 void Server::pollNetworkEvents() {
 	ENetEvent event;
-	CToSPacketType* header;
+	ProtobufMessagePacket* packet;
 	std::string serializedData;
 	while (enet_host_service (_enetHost, &event, 0) > 0) {
 		switch (event.type) 	{
@@ -46,10 +54,10 @@ void Server::pollNetworkEvents() {
 			}
 			break;
 		case ENET_EVENT_TYPE_RECEIVE:
-			header = reinterpret_cast<CToSPacketType*>(event.packet->data);
-			serializedData = std::string(reinterpret_cast<const char*>(event.packet->data + sizeof(CToSPacketType)), event.packet->dataLength - sizeof(CToSPacketType));
+			std::cout << "package received" << std::endl;
+			packet = deserialize<ProtobufMessagePacket>(std::string(reinterpret_cast<const char*>(event.packet->data), event.packet->dataLength));
 			if (_packetHandler != nullptr) {
-				_packetHandler->handleCToSPacket(event.peer->incomingPeerID, header, serializedData);
+				_packetHandler->handleCToSPacket(event.peer->incomingPeerID, packet);
 			}
 			enet_packet_destroy(event.packet);
 			break;
@@ -64,4 +72,19 @@ void Server::pollNetworkEvents() {
 			event.peer->data = NULL;
 		}
 	}
+}
+
+void Server::sendPacket(unsigned short peerId, ProtobufMessagePacket* payload, bool reliable) {
+	std::string serializedPayload;
+	payload->SerializeToString(&serializedPayload);
+	ENetPacket* enetPacket = enet_packet_create(serializedPayload.c_str(), serializedPayload.size(), reliable ? ENET_PACKET_FLAG_RELIABLE : 0);
+	enet_peer_send(_peers[peerId], 0, enetPacket);
+}
+
+void Server::broadcastPacket(ProtobufMessagePacket* payload, bool reliable) {
+	std::cout << "broadcasting packet with header: " << payload->header() << std::endl;
+	std::string serializedPayload;
+	payload->SerializeToString(&serializedPayload);
+	ENetPacket* enetPacket = enet_packet_create(serializedPayload.c_str(), serializedPayload.size(), reliable ? ENET_PACKET_FLAG_RELIABLE : 0);
+	enet_host_broadcast(_enetHost, 0, enetPacket);
 }

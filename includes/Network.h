@@ -10,7 +10,7 @@ class CToSPacketHandler {
 public:
 	virtual void handleConnect(unsigned short peerId) = 0;
 	virtual void handleDisconnect(unsigned short peerId) = 0;
-	virtual void handleCToSPacket(unsigned short peerId, CToSPacketType* header, std::string data) = 0; 
+	virtual void handleCToSPacket(unsigned short peerId, ProtobufMessagePacket* packet) = 0;
 };
 
 class Server {
@@ -22,8 +22,8 @@ public:
 	CToSPacketHandler* getPacketHandler();
 
 	void pollNetworkEvents();
-	template<typename S> void sendPacket(unsigned short peerId, SToCPacketType header, S* payload, bool reliable = false);
-	template<typename S> void broadcastPacket(SToCPacketType header, S* payload, bool reliable = false);
+	void sendPacket(unsigned short peerId, ProtobufMessagePacket* payload, bool reliable = false);
+	void broadcastPacket(ProtobufMessagePacket* payload, bool reliable = false);
 private:
 	CToSPacketHandler* _packetHandler;
 
@@ -31,6 +31,4 @@ private:
 	ENetHost* _enetHost;
 	std::map<enet_uint16, ENetPeer*> _peers;
 };
-
-#include "Network.inl"
 #endif
