@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "TGMath/MathTypes.h"
+#include "TGMath/MathFunctions.h"
 #include "TGMath/Vector.h"
 
 template <class ValueTypeT>
