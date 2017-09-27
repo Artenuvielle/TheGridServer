@@ -54,7 +54,6 @@ void Server::pollNetworkEvents() {
 			}
 			break;
 		case ENET_EVENT_TYPE_RECEIVE:
-			std::cout << "package received" << std::endl;
 			packet = deserialize<ProtobufMessagePacket>(std::string(reinterpret_cast<const char*>(event.packet->data), event.packet->dataLength));
 			if (_packetHandler != nullptr) {
 				_packetHandler->handleCToSPacket(event.peer->incomingPeerID, packet);
@@ -82,7 +81,6 @@ void Server::sendPacket(unsigned short peerId, ProtobufMessagePacket* payload, b
 }
 
 void Server::broadcastPacket(ProtobufMessagePacket* payload, bool reliable) {
-	std::cout << "broadcasting packet with header: " << payload->header() << std::endl;
 	std::string serializedPayload;
 	payload->SerializeToString(&serializedPayload);
 	ENetPacket* enetPacket = enet_packet_create(serializedPayload.c_str(), serializedPayload.size(), reliable ? ENET_PACKET_FLAG_RELIABLE : 0);
