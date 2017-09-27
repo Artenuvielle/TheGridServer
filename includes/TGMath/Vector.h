@@ -4,6 +4,7 @@
 #include <vector>
 #include <iostream>
 #include "TGMath/MathTypes.h"
+#include "TGMath/MathFunctions.h"
 
 template <class ValueTypeT, UInt32 SizeI>
 class Vector
