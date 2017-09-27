@@ -7,11 +7,14 @@
 #include "NetworkPackets.h"
 #include "Game.h"
 #include "Player.h"
+#ifndef _MSC_VER
+#include <unistd.h>
+#endif
 
 Server* gameServer;
 GameManager* gameManager;
 
-int maxServerTicksPerSecond = 50;
+int maxServerTicksPerSecond = 120;
 
 void onClose() {
 	delete gameServer;
@@ -21,7 +24,11 @@ void onClose() {
 
 void sleepUntilTickTimeIsOver() {
 	int timeToSleep = 1000 / maxServerTicksPerSecond;
+#ifdef _MSC_VER
 	Sleep(timeToSleep);
+#else
+	usleep(timeToSleep * 1000);
+#endif
 	elapsedTime += timeToSleep;
 }
 
