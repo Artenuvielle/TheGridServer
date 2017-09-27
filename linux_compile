@@ -5,8 +5,11 @@ if [ ! -d build ]; then
 fi
 cd build && \
 cmake -C ../user.cmake \
--DCMAKE_C_COMPILER=/lrz/sys/compilers/gcc/5.1.0/bin/gcc \
--DCMAKE_CXX_COMPILER=/lrz/sys/compilers/gcc/5.1.0/bin/g++ \
+if [ -f /lrz/sys/compilers/gcc/5.1.0/bin/gcc ];
+then
+	-DCMAKE_C_COMPILER=/lrz/sys/compilers/gcc/5.1.0/bin/gcc \
+	-DCMAKE_CXX_COMPILER=/lrz/sys/compilers/gcc/5.1.0/bin/g++ \
+fi
 -DCMAKE_CXX_FLAGS="-std=c++11" \
 .. && make && cd .. && \
 if [ ! -e start_server_Release ] ; then
@@ -14,4 +17,3 @@ if [ ! -e start_server_Release ] ; then
 #	echo "./build/main" >> start_demo
 	chmod +x start_*
 fi
-
