@@ -26,7 +26,7 @@ void Observable<NotificationTypeT>::attach(Observer<NotificationTypeT> *obs) {
 
 template <class NotificationTypeT> inline
 void Observable<NotificationTypeT>::detach(Observer<NotificationTypeT> *obs) {
-	std::vector<Observer<NotificationTypeT>*>::iterator position = std::find(_views.begin(), _views.end(), obs);
+	typename std::vector<Observer<NotificationTypeT>*>::iterator position = std::find(_views.begin(), _views.end(), obs);
 	if (position != _views.end()) {
 		_views.erase(position);
 	}
