@@ -422,9 +422,9 @@ template <class ValueTypeT> inline
 void QuaternionBase<ValueTypeT>::getEulerAngleDeg(VectorType &euler) const {
 	getEulerAngleRad(euler);
 
-	euler[0] = rad2Degree(euler[0]);
-	euler[1] = rad2Degree(euler[1]);
-	euler[2] = rad2Degree(euler[2]);
+	euler[0] = tg_math::rad2Degree(euler[0]);
+	euler[1] = tg_math::rad2Degree(euler[1]);
+	euler[2] = tg_math::rad2Degree(euler[2]);
 }
 
 template <class ValueTypeT> inline
