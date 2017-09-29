@@ -187,7 +187,7 @@ void GameManager::handleCToSPacket(unsigned short peerId, ProtobufMessagePacket*
 			ProtobufMessagePacket* packet = new ProtobufMessagePacket();
 			packet->set_header(ProtobufMessagePacket_Header_STOC_PACKET_TYPE_GAME_STATE_BROADCAST);
 			packet->set_allocated_game_information(gi);
-			_server->sendPacket(peerId, packet, true);
+			_server->broadcastPacket(packet, true);
 		} else {
 			std::cout << "Game allready running, wait for it to finish..." << std::endl;
 		}
@@ -225,12 +225,10 @@ bool GameManager::observableUpdate(GameNotifications notification, Observable<Ga
 	int srcPeer;
 	PlayerFaction srcFaction;
 	if (_playerBlue == src) {
-		std::cout << "Game event (blue): " << notification << std::endl;
 		srcPlayer = _playerBlue;
 		srcPeer = _playerBluePeer;
 		srcFaction = PLAYER_FACTION_BLUE;
 	} else {
-		std::cout << "Game event (orange): " << notification << std::endl;
 		srcPlayer = _playerOrange;
 		srcPeer = _playerOrangePeer;
 		srcFaction = PLAYER_FACTION_ORANGE;
