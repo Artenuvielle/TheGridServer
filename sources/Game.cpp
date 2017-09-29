@@ -289,7 +289,7 @@ void GameManager::sendDiscThrowInformationToPeer(Player* player, PlayerFaction f
 	dti->set_allocated_disk_pos(&diskPosition);
 	dti->set_allocated_disk_momentum(&diskMomentum);
 	ProtobufMessagePacket* packet = new ProtobufMessagePacket();
-	packet->set_header(ProtobufMessagePacket_Header_STOC_PACKET_TYPE_DISK_STATUS_BROADCAST);
+	packet->set_header(ProtobufMessagePacket_Header_STOC_PACKET_TYPE_DISK_THROW_BROADCAST);
 	packet->set_allocated_disk_throw_information(dti);
 	_server->sendPacket(peerId, packet, true);
 }
@@ -309,7 +309,9 @@ void GameManager::sendDiscPosition(Player* player, PlayerFaction faction, int pl
 	dp->set_player_id(playerId);
 	dp->set_faction_id(faction);
 	PositionPacketType diskPosition = createPosition(player->getDisk()->getPosition(), receivingFaction);
+	OrientationPacketType diskRotation = createOrientation(player->getDisk()->getRotation(), receivingFaction);
 	dp->set_allocated_disk_pos(&diskPosition);
+	dp->set_allocated_disk_rot(&diskRotation);
 	ProtobufMessagePacket* packet = new ProtobufMessagePacket();
 	packet->set_header(ProtobufMessagePacket_Header_STOC_PACKET_TYPE_DISK_POSITION_BROADCAST);
 	packet->set_allocated_disk_position(dp);
