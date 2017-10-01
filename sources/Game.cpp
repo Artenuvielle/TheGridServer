@@ -113,7 +113,7 @@ void GameManager::sendPlayerPositionsToPeer(Player* player, PlayerFaction factio
 	pp->set_allocated_off_hand_pos(&off_hand_pos);
 	pp->set_allocated_off_hand_rot(&off_hand_rot);
 	ProtobufMessagePacket* packet = new ProtobufMessagePacket();
-	packet->set_header(ProtobufMessagePacket_Header_STOC_PACKET_TYPE_PLAYER_POSITION_BROADCAST);
+	packet->set_header(STOC_PACKET_TYPE_PLAYER_POSITION_BROADCAST);
 	packet->set_allocated_player_position(pp);
 	_server->sendPacket(peerId, packet);
 }
@@ -151,7 +151,7 @@ void GameManager::handleConnect(unsigned short peerId) {
 		return;
 	}
 	ProtobufMessagePacket* packet = new ProtobufMessagePacket();
-	packet->set_header(ProtobufMessagePacket_Header_STOC_PACKET_TYPE_PLAYER_IDENTIFICATION);
+	packet->set_header(STOC_PACKET_TYPE_PLAYER_IDENTIFICATION);
 	packet->set_allocated_player_information(info);
 	_server->sendPacket(peerId, packet, true);
 }
@@ -171,7 +171,7 @@ void GameManager::handleDisconnect(unsigned short peerId) {
 
 void GameManager::handleCToSPacket(unsigned short peerId, ProtobufMessagePacket* packet) {
 	switch (packet->header()) {
-	case ProtobufMessagePacket_Header_CTOS_PACKET_TYPE_START_GAME_REQUEST:
+	case CTOS_PACKET_TYPE_START_GAME_REQUEST:
 		std::cout << "Start request header: " << gameRunning << std::endl;
 		if (!gameRunning) {
 			_playerBlue->setLifeCount(lifeCounterMaxLife);
@@ -185,14 +185,14 @@ void GameManager::handleCToSPacket(unsigned short peerId, ProtobufMessagePacket*
 			GameInformation* gi = new GameInformation();
 			gi->set_is_running(gameRunning);
 			ProtobufMessagePacket* packet = new ProtobufMessagePacket();
-			packet->set_header(ProtobufMessagePacket_Header_STOC_PACKET_TYPE_GAME_STATE_BROADCAST);
+			packet->set_header(STOC_PACKET_TYPE_GAME_STATE_BROADCAST);
 			packet->set_allocated_game_information(gi);
 			_server->broadcastPacket(packet, true);
 		} else {
 			std::cout << "Game allready running, wait for it to finish..." << std::endl;
 		}
 		break;
-	case ProtobufMessagePacket_Header_CTOS_PACKET_TYPE_PLAYER_POSITION_INFORMATION:
+	case CTOS_PACKET_TYPE_PLAYER_POSITION_INFORMATION:
 		if (_playerBluePeer == peerId) {
 			setPlayerPositions(_playerBlue, packet->player_position());
 		} else if (_playerOrangePeer == peerId) {
@@ -202,7 +202,7 @@ void GameManager::handleCToSPacket(unsigned short peerId, ProtobufMessagePacket*
 			return;
 		}
 		break;
-	case ProtobufMessagePacket_Header_CTOS_PACKET_TYPE_PLAYER_THROW_INFORMATION:
+	case CTOS_PACKET_TYPE_PLAYER_THROW_INFORMATION:
 		if (_playerBluePeer == peerId) {
 			throwPlayerDisk(_playerBlue, packet->disk_throw_information());
 		} else if (_playerOrangePeer == peerId) {
@@ -240,7 +240,7 @@ bool GameManager::observableUpdate(GameNotifications notification, Observable<Ga
 			pci->set_faction_id(srcFaction);
 			pci->set_counter(srcPlayer->getLifeCount());
 			ProtobufMessagePacket* packet = new ProtobufMessagePacket();
-			packet->set_header(ProtobufMessagePacket_Header_STOC_PACKET_TYPE_DISK_STATUS_BROADCAST);
+			packet->set_header(STOC_PACKET_TYPE_PLAYER_CHANGED_LIFE_BROADCAST);
 			packet->set_allocated_player_counter_information(pci);
 			_server->broadcastPacket(packet, true);
 		} else if (notification == GAME_NOTIFICATION_PLAYER_CHANGED_SHIELD_CHARGE) {
@@ -249,16 +249,16 @@ bool GameManager::observableUpdate(GameNotifications notification, Observable<Ga
 			pci->set_faction_id(srcFaction);
 			pci->set_counter(srcPlayer->getShield()->getCharges());
 			ProtobufMessagePacket* packet = new ProtobufMessagePacket();
-			packet->set_header(ProtobufMessagePacket_Header_STOC_PACKET_TYPE_DISK_STATUS_BROADCAST);
+			packet->set_header(STOC_PACKET_TYPE_PLAYER_CHANGED_SHIELD_CHARGE_BROADCAST);
 			packet->set_allocated_player_counter_information(pci);
 			_server->broadcastPacket(packet, true);
 		} else if (notification == GAME_NOTIFICATION_DISK_STATE_CHANGED) {
 			DiskStatusInformation* dsi = new DiskStatusInformation();
 			dsi->set_player_id(srcPeer);
 			dsi->set_faction_id(srcFaction);
-			dsi->set_disk_status_id(srcPlayer->getDisk()->getState());
+			dsi->set_disk_status(srcPlayer->getDisk()->getState());
 			ProtobufMessagePacket* packet = new ProtobufMessagePacket();
-			packet->set_header(ProtobufMessagePacket_Header_STOC_PACKET_TYPE_DISK_STATUS_BROADCAST);
+			packet->set_header(STOC_PACKET_TYPE_DISK_STATUS_BROADCAST);
 			packet->set_allocated_disk_status_information(dsi);
 			_server->broadcastPacket(packet, true);
 		} else if (notification == GAME_NOTIFICATION_DISK_THROWN) {
@@ -287,7 +287,7 @@ void GameManager::sendDiscThrowInformationToPeer(Player* player, PlayerFaction f
 	dti->set_allocated_disk_pos(&diskPosition);
 	dti->set_allocated_disk_momentum(&diskMomentum);
 	ProtobufMessagePacket* packet = new ProtobufMessagePacket();
-	packet->set_header(ProtobufMessagePacket_Header_STOC_PACKET_TYPE_DISK_THROW_BROADCAST);
+	packet->set_header(STOC_PACKET_TYPE_DISK_THROW_BROADCAST);
 	packet->set_allocated_disk_throw_information(dti);
 	_server->sendPacket(peerId, packet, true);
 }
@@ -311,7 +311,7 @@ void GameManager::sendDiscPosition(Player* player, PlayerFaction faction, int pl
 	dp->set_allocated_disk_pos(&diskPosition);
 	dp->set_allocated_disk_rot(&diskRotation);
 	ProtobufMessagePacket* packet = new ProtobufMessagePacket();
-	packet->set_header(ProtobufMessagePacket_Header_STOC_PACKET_TYPE_DISK_POSITION_BROADCAST);
+	packet->set_header(STOC_PACKET_TYPE_DISK_POSITION_BROADCAST);
 	packet->set_allocated_disk_position(dp);
 	_server->sendPacket(peerId, packet);
 }

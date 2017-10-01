@@ -3,16 +3,9 @@
 #define _Disk_H_
 
 #include "Observer.h"
-
+#include "NetworkPackets.h"
 #include "Common.h"
 #include "Shield.h"
-
-enum DiskState {
-	DISK_STATE_READY = 0,
-	DISK_STATE_DRAWN,
-	DISK_STATE_FREE_FLY,
-	DISK_STATE_RETURNING
-};
 
 class DiskEventHandler {
 public:

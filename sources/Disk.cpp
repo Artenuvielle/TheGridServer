@@ -266,6 +266,7 @@ void Disk::moveDiskAtLeastUntilWallCollision(Real32 deltaTime) {
 		//createAnimationAtCollisionPoint(Vec3f(x,y,WALL_Z_MAX), collisionAnimationSize, COLLISION_WALL_NORMAL_Z, diskType);
 		if (diskType != userFaction) {
 			state = DISK_STATE_RETURNING;
+			notify(GAME_NOTIFICATION_DISK_STATE_CHANGED);
 			std::cout << "enemy disk returning" << '\n';
 		} else {
 			if (state == DISK_STATE_RETURNING) {
