@@ -166,7 +166,7 @@ void Disk::update() {
 			forward = Vec3f(0,0,userFaction == diskType ? 1 : -1);
 		}
 
-		Real32 targetProximity = 1 - (vectorToTarget.length() / WALL_Z_DIFF);
+		Real32 targetProximity = 1 - (vectorToTarget.length() / WALL_BACKWARD_DIFF);
 
 		Quaternion axisRotation;
 		if (elapsedTime - lastCollisionTime < diskRotationTimeAfterCollision * 1000) {
@@ -230,40 +230,45 @@ void Disk::moveDiskAtLeastUntilWallCollision(Real32 deltaTime) {
 	nearestZOffset *= diskRadius / nearestZOffset.length();
 	Vec3f moveVector = calculateMovement(deltaTime);
 	
-	if ((transform.getTranslation().x() + nearestXOffset.x() + moveVector.x() * stepLengthPercentage) > WALL_X_MAX) {
+	if ((transform.getTranslation().x() + nearestXOffset.x() + moveVector.x() * stepLengthPercentage) > WALL_RIGHT_MAX) {
 		nextMomentum = Vec3f(-nextMomentum.x(), nextMomentum.y(), nextMomentum.z());
 		nextTargetAngle = currentAngle < 180 ? 90 : 270;
 		collided = true;
-		stepLengthPercentage = (WALL_X_MAX - x - nearestXOffset.x()) / moveVector.x();
-		//createAnimationAtCollisionPoint(Vec3f(WALL_X_MAX,y,z), collisionAnimationSize, COLLISION_WALL_NORMAL_X, diskType);
-	} else if((transform.getTranslation().x() - nearestXOffset.x() + moveVector.x() * stepLengthPercentage) < WALL_X_MIN) {
+		stepLengthPercentage = (WALL_RIGHT_MAX - x - nearestXOffset.x()) / moveVector.x();
+		notify(GAME_NOTIFICATION_WALL_COLLISION);
+		//createAnimationAtCollisionPoint(Vec3f(WALL_RIGHT_MAX,y,z), collisionAnimationSize, COLLISION_WALL_NORMAL_X, diskType);
+	} else if((transform.getTranslation().x() - nearestXOffset.x() + moveVector.x() * stepLengthPercentage) < WALL_RIGHT_MIN) {
 		nextMomentum = Vec3f(-nextMomentum.x(), nextMomentum.y(), nextMomentum.z());
 		nextTargetAngle = currentAngle < 180 ? 90 : 270;
 		collided = true;
-		stepLengthPercentage = (WALL_X_MIN - x + nearestXOffset.x()) / moveVector.x();
-		//createAnimationAtCollisionPoint(Vec3f(WALL_X_MIN,y,z), collisionAnimationSize, COLLISION_WALL_NORMAL_X, diskType);
+		stepLengthPercentage = (WALL_RIGHT_MIN - x + nearestXOffset.x()) / moveVector.x();
+		notify(GAME_NOTIFICATION_WALL_COLLISION);
+		//createAnimationAtCollisionPoint(Vec3f(WALL_RIGHT_MIN,y,z), collisionAnimationSize, COLLISION_WALL_NORMAL_X, diskType);
 	}
 
-	if ((transform.getTranslation().y() + nearestYOffset.y() + moveVector.y() * stepLengthPercentage) > WALL_Y_MAX) {
+	if ((transform.getTranslation().y() + nearestYOffset.y() + moveVector.y() * stepLengthPercentage) > WALL_UP_MAX) {
 		nextMomentum = Vec3f(nextMomentum.x(), -nextMomentum.y(), nextMomentum.z());
 		nextTargetAngle = currentAngle < 90 || currentAngle >= 270 ? 0 : 180;
 		collided = true;
-		stepLengthPercentage = (WALL_Y_MAX - y - nearestYOffset.y()) / moveVector.y();
-		//createAnimationAtCollisionPoint(Vec3f(x,WALL_Y_MAX,z), collisionAnimationSize, COLLISION_WALL_NORMAL_Y, diskType);
-	} else if((transform.getTranslation().y() - nearestYOffset.y() + moveVector.y() * stepLengthPercentage) < WALL_Y_MIN) {
+		stepLengthPercentage = (WALL_UP_MAX - y - nearestYOffset.y()) / moveVector.y();
+		notify(GAME_NOTIFICATION_WALL_COLLISION);
+		//createAnimationAtCollisionPoint(Vec3f(x,WALL_UP_MAX,z), collisionAnimationSize, COLLISION_WALL_NORMAL_Y, diskType);
+	} else if((transform.getTranslation().y() - nearestYOffset.y() + moveVector.y() * stepLengthPercentage) < WALL_UP_MIN) {
 		nextMomentum = Vec3f(nextMomentum.x(), -nextMomentum.y(), nextMomentum.z());
 		nextTargetAngle = currentAngle < 90 || currentAngle >= 270 ? 0 : 180;
 		collided = true;
-		stepLengthPercentage = (WALL_Y_MIN - y + nearestYOffset.y()) / moveVector.y();
-		//createAnimationAtCollisionPoint(Vec3f(x,WALL_Y_MIN,z), collisionAnimationSize, COLLISION_WALL_NORMAL_Y, diskType);
+		stepLengthPercentage = (WALL_UP_MIN - y + nearestYOffset.y()) / moveVector.y();
+		notify(GAME_NOTIFICATION_WALL_COLLISION);
+		//createAnimationAtCollisionPoint(Vec3f(x,WALL_UP_MIN,z), collisionAnimationSize, COLLISION_WALL_NORMAL_Y, diskType);
 	}
 	
-	if ((transform.getTranslation().z() + nearestZOffset.z() + moveVector.z() * stepLengthPercentage) > WALL_Z_MAX) {
+	if ((transform.getTranslation().z() + nearestZOffset.z() + moveVector.z() * stepLengthPercentage) > WALL_BACKWARD_MAX) {
 		nextMomentum = Vec3f(nextMomentum.x(), nextMomentum.y(), -nextMomentum.z());
 		nextTargetAngle = currentAngle < 180 ? 90 : 270;
 		collided = true;
-		stepLengthPercentage = (WALL_Z_MAX - z - nearestZOffset.z()) / moveVector.z();
-		//createAnimationAtCollisionPoint(Vec3f(x,y,WALL_Z_MAX), collisionAnimationSize, COLLISION_WALL_NORMAL_Z, diskType);
+		stepLengthPercentage = (WALL_BACKWARD_MAX - z - nearestZOffset.z()) / moveVector.z();
+		notify(GAME_NOTIFICATION_WALL_COLLISION);
+		//createAnimationAtCollisionPoint(Vec3f(x,y,WALL_BACKWARD_MAX), collisionAnimationSize, COLLISION_WALL_NORMAL_Z, diskType);
 		if (diskType != userFaction) {
 			state = DISK_STATE_RETURNING;
 			notify(GAME_NOTIFICATION_DISK_STATE_CHANGED);
@@ -274,12 +279,13 @@ void Disk::moveDiskAtLeastUntilWallCollision(Real32 deltaTime) {
 				handler->handleDiskCatch();
 			}
 		}
-	} else if((transform.getTranslation().z() - nearestZOffset.z() + moveVector.z() * stepLengthPercentage) < WALL_Z_MIN) {
+	} else if((transform.getTranslation().z() - nearestZOffset.z() + moveVector.z() * stepLengthPercentage) < WALL_BACKWARD_MIN) {
 		nextMomentum = Vec3f(nextMomentum.x(), nextMomentum.y(), -nextMomentum.z());
 		nextTargetAngle = currentAngle < 180 ? 90 : 270;
 		collided = true;
-		stepLengthPercentage = (WALL_Z_MIN - z + nearestZOffset.z()) / moveVector.z();
-		//createAnimationAtCollisionPoint(Vec3f(x,y,WALL_Z_MIN), collisionAnimationSize, COLLISION_WALL_NORMAL_Z, diskType);
+		stepLengthPercentage = (WALL_BACKWARD_MIN - z + nearestZOffset.z()) / moveVector.z();
+		notify(GAME_NOTIFICATION_WALL_COLLISION);
+		//createAnimationAtCollisionPoint(Vec3f(x,y,WALL_BACKWARD_MIN), collisionAnimationSize, COLLISION_WALL_NORMAL_Z, diskType);
 		if (diskType == userFaction) {
 			state = DISK_STATE_RETURNING;
 			notify(GAME_NOTIFICATION_DISK_STATE_CHANGED);
@@ -295,9 +301,9 @@ void Disk::moveDiskAtLeastUntilWallCollision(Real32 deltaTime) {
 	// making sure disk won't get into walls at all...
 	Vec3f newPosition = transform.getTranslation() + moveVector * stepLengthPercentage;
 	newPosition = Vec3f(
-		tg_math::min(tg_math::max(newPosition.x(), WALL_X_MIN + nearestXOffset.x()), WALL_X_MAX - nearestXOffset.x()),
-		tg_math::min(tg_math::max(newPosition.y(), WALL_Y_MIN + nearestXOffset.y()), WALL_Y_MAX - nearestXOffset.y()),
-		tg_math::min(tg_math::max(newPosition.z(), WALL_Z_MIN + nearestXOffset.z()), WALL_Z_MAX - nearestXOffset.z())
+		tg_math::min(tg_math::max(newPosition.x(), WALL_RIGHT_MIN + nearestXOffset.x()), WALL_RIGHT_MAX - nearestXOffset.x()),
+		tg_math::min(tg_math::max(newPosition.y(), WALL_UP_MIN + nearestXOffset.y()), WALL_UP_MAX - nearestXOffset.y()),
+		tg_math::min(tg_math::max(newPosition.z(), WALL_BACKWARD_MIN + nearestXOffset.z()), WALL_BACKWARD_MAX - nearestXOffset.z())
 		);
 	transform.setTranslation(newPosition);
 	if (collided) {

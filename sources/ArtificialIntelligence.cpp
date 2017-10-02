@@ -28,9 +28,9 @@ Real32 splineLengthApproximation(Int32 steps, Vec3f p0, Vec3f p1, Vec3f d0, Vec3
 }
 
 Vec3f getPositionForAIInBounds(Vec3f input) {
-	return Vec3f(tg_math::max(WALL_X_MIN + 30, tg_math::min(WALL_X_MAX - 30, input.x())),
-	             tg_math::max(WALL_Y_MIN + 30, tg_math::min(WALL_Y_MAX - 30, input.y())),
-	             tg_math::max(WALL_Z_MIN + 30, tg_math::min(WALL_Z_MIN + 270 - 30, input.z())));
+	return Vec3f(tg_math::max(WALL_RIGHT_MIN + 30,    tg_math::min(WALL_RIGHT_MAX - 30, input.x())),
+	             tg_math::max(WALL_UP_MIN + 30,       tg_math::min(WALL_UP_MAX - 30, input.y())),
+	             tg_math::max(WALL_BACKWARD_MIN + 30, tg_math::min(WALL_BACKWARD_MIN + 270 - 30, input.z())));
 }
 
 AI::AI(Player* aiTarget) {

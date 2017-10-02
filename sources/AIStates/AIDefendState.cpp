@@ -46,7 +46,7 @@ AIState AIDefendState::update() {
 		
 	diskArmPosition = me->getHeadPosition() + Vec3f(0,-60,0) - rotatedShoulderOffset;
 	diskArmRotation = Quaternion(Vec3f(1,0,0), tg_math::degree2Rad(90)) * Quaternion(Vec3f(0,0,1), tg_math::degree2Rad(90));
-	if (me->getDisk()->getState() == DISK_STATE_RETURNING && me->getDisk()->getPosition().z() < WALL_Z_MID) {
+	if (me->getDisk()->getState() == DISK_STATE_RETURNING && me->getDisk()->getPosition().z() < WALL_BACKWARD_MID) {
 		return AI_STATE_CATCH;
 	} else if (me->getEnemy()->getDisk()->getState() == DISK_STATE_FREE_FLY) {
 		return AI_STATE_DEFEND;

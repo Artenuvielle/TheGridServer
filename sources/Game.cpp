@@ -263,6 +263,8 @@ bool GameManager::observableUpdate(GameNotifications notification, Observable<Ga
 			_server->broadcastPacket(packet, true);
 		} else if (notification == GAME_NOTIFICATION_DISK_THROWN) {
 			broadcastDiscThrowInformation(srcPlayer, srcFaction, srcPeer);
+		} else if (notification == GAME_NOTIFICATION_WALL_COLLISION) {
+			broadcastWallCollision(srcPlayer, srcFaction, srcPeer);
 		}
 	}
 	return true;
@@ -314,6 +316,79 @@ void GameManager::sendDiscPosition(Player* player, PlayerFaction faction, int pl
 	packet->set_header(STOC_PACKET_TYPE_DISK_POSITION_BROADCAST);
 	packet->set_allocated_disk_position(dp);
 	_server->sendPacket(peerId, packet);
+}
+
+void GameManager::broadcastWallCollision(Player* player, PlayerFaction faction, int playerId) {
+	if (_playerBluePeer >= 0) {
+		sendWallCollision(player, faction, playerId, _playerBluePeer);
+	}
+	if (_playerOrangePeer >= 0) {
+		sendWallCollision(player, faction, playerId, _playerOrangePeer);
+	}
+}
+
+void GameManager::sendWallCollision(Player* player, PlayerFaction faction, int playerId, int peerId) {
+	PlayerFaction receivingFaction = peerId == _playerBluePeer ? PLAYER_FACTION_BLUE : PLAYER_FACTION_ORANGE;
+	WallCollisonInformation* wci = new WallCollisonInformation();
+	wci->set_player_id(playerId);
+	wci->set_faction_id(faction);
+
+	Vec3f pos = player->getDisk()->getPosition();
+	float minDistance = FLT_MAX;
+	CollisionWall collisionWall;
+	if (-WALL_BACKWARD_MIN + pos.z() < minDistance) {
+		minDistance = -WALL_BACKWARD_MIN + pos.z();
+		collisionWall = COLLISION_WALL_FORWARD;
+	}
+	if (WALL_BACKWARD_MAX - pos.z() < minDistance) {
+		minDistance = WALL_BACKWARD_MAX - pos.z();
+		collisionWall = COLLISION_WALL_BACKWARD;
+	}
+	if (WALL_UP_MAX - pos.y() < minDistance) {
+		minDistance = WALL_UP_MAX - pos.y();
+		collisionWall = COLLISION_WALL_UP;
+	}
+	if (-WALL_UP_MIN + pos.y() < minDistance) {
+		minDistance = -WALL_UP_MIN + pos.y();
+		collisionWall = COLLISION_WALL_DOWN;
+	}
+	if (WALL_RIGHT_MAX - pos.x() < minDistance) {
+		minDistance = WALL_RIGHT_MAX - pos.x();
+		collisionWall = COLLISION_WALL_RIGHT;
+	}
+	if (-WALL_RIGHT_MIN + pos.x() < minDistance) {
+		minDistance = -WALL_RIGHT_MIN + pos.x();
+		collisionWall = COLLISION_WALL_LEFT;
+	}
+
+	switch (collisionWall) {
+	case COLLISION_WALL_RIGHT:
+		pos = Vec3f(WALL_RIGHT_MAX, pos.y(), pos.z());
+		break;
+	case COLLISION_WALL_LEFT:
+		pos = Vec3f(WALL_RIGHT_MIN, pos.y(), pos.z());
+		break;
+	case COLLISION_WALL_UP:
+		pos = Vec3f(pos.x(), WALL_UP_MAX, pos.z());
+		break;
+	case COLLISION_WALL_DOWN:
+		pos = Vec3f(pos.x(), WALL_UP_MIN, pos.z());
+		break;
+	case COLLISION_WALL_BACKWARD:
+		pos = Vec3f(pos.x(), pos.y(), WALL_BACKWARD_MAX);
+		break;
+	case COLLISION_WALL_FORWARD:
+		pos = Vec3f(pos.x(), pos.y(), WALL_BACKWARD_MIN);
+		break;
+	}
+
+	PositionPacketType diskPosition = createPosition(pos, receivingFaction);
+	wci->set_allocated_collision_pos(&diskPosition);
+	wci->set_collision_wall(collisionWall);
+	ProtobufMessagePacket* packet = new ProtobufMessagePacket();
+	packet->set_header(STOC_PACKET_TYPE_WALL_COLLISION_INFORMATION);
+	packet->set_allocated_wall_collision_information(wci);
+	_server->sendPacket(peerId, packet, true);
 }
 
 void GameManager::observableRevoke(GameNotifications notification, Observable<GameNotifications>* src) {

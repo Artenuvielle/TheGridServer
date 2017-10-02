@@ -27,21 +27,21 @@ AIState AIIdleState::update() {
 		}
 	} else {
 		if (me->getFaction() == enemyFaction) {
-			if (me->getDisk()->getState() == DISK_STATE_RETURNING && me->getDisk()->getPosition().z() < WALL_Z_MID + 150) {
+			if (me->getDisk()->getState() == DISK_STATE_RETURNING && me->getDisk()->getPosition().z() < WALL_BACKWARD_MID + 150) {
 				return AI_STATE_CATCH;
 			}
 		} else {
-			if (me->getDisk()->getState() == DISK_STATE_RETURNING && me->getDisk()->getPosition().z() > WALL_Z_MID - 150) {
+			if (me->getDisk()->getState() == DISK_STATE_RETURNING && me->getDisk()->getPosition().z() > WALL_BACKWARD_MID - 150) {
 				return AI_STATE_CATCH;
 			}
 		}
 	}
 	if (me->getFaction() == enemyFaction) {
-		if (me->getEnemy()->getDisk()->getState() == DISK_STATE_FREE_FLY && me->getEnemy()->getDisk()->getPosition().z() < WALL_Z_MID) {
+		if (me->getEnemy()->getDisk()->getState() == DISK_STATE_FREE_FLY && me->getEnemy()->getDisk()->getPosition().z() < WALL_BACKWARD_MID) {
 			return AI_STATE_DEFEND;
 		}
 	} else {
-		if (me->getEnemy()->getDisk()->getState() == DISK_STATE_FREE_FLY && me->getEnemy()->getDisk()->getPosition().z() < WALL_Z_MID) {
+		if (me->getEnemy()->getDisk()->getState() == DISK_STATE_FREE_FLY && me->getEnemy()->getDisk()->getPosition().z() < WALL_BACKWARD_MID) {
 			return AI_STATE_DEFEND;
 		}
 	}
