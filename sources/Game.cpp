@@ -222,15 +222,17 @@ void GameManager::handleCToSPacket(unsigned short peerId, ProtobufMessagePacket*
 
 bool GameManager::observableUpdate(GameNotifications notification, Observable<GameNotifications>* src) {
 	Player* srcPlayer = nullptr;
-	int srcPeer;
+	int srcPeer, otherPeer;
 	PlayerFaction srcFaction;
 	if (_playerBlue == src) {
 		srcPlayer = _playerBlue;
 		srcPeer = _playerBluePeer;
+		otherPeer = _playerOrangePeer;
 		srcFaction = PLAYER_FACTION_BLUE;
 	} else {
 		srcPlayer = _playerOrange;
 		srcPeer = _playerOrangePeer;
+		otherPeer = _playerBluePeer;
 		srcFaction = PLAYER_FACTION_ORANGE;
 	}
 	if (srcPlayer != nullptr) {
@@ -243,6 +245,15 @@ bool GameManager::observableUpdate(GameNotifications notification, Observable<Ga
 			packet->set_header(STOC_PACKET_TYPE_PLAYER_CHANGED_LIFE_BROADCAST);
 			packet->set_allocated_player_counter_information(pci);
 			_server->broadcastPacket(packet, true);
+			if (srcPlayer->getLifeCount() == 0) {
+				GameInformation* gi = new GameInformation();
+				gi->set_is_running(false);
+				gi->set_winning_player_id(otherPeer);
+				ProtobufMessagePacket* packet = new ProtobufMessagePacket();
+				packet->set_header(STOC_PACKET_TYPE_GAME_STATE_BROADCAST);
+				packet->set_allocated_game_information(gi);
+				_server->broadcastPacket(packet, true);
+			}
 		} else if (notification == GAME_NOTIFICATION_PLAYER_CHANGED_SHIELD_CHARGE) {
 			PlayerCounterInformation* pci = new PlayerCounterInformation();
 			pci->set_player_id(srcPeer);
