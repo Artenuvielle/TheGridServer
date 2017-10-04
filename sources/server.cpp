@@ -40,11 +40,16 @@ int main (int argc, char ** argv) {
     atexit(onClose);	
 	GOOGLE_PROTOBUF_VERIFY_VERSION;
 
+	short port = 13244;
 	elapsedTime = 0;
 
-	Player a(userFaction);
-	
-	gameServer = new Server(ENET_HOST_ANY, 13244);
+	if (argc > 1) {
+		port = atoi(argv[1]);
+	}
+
+	std::cout << "Setting address to: 0.0.0.0:" << port << std::endl;
+
+	gameServer = new Server(ENET_HOST_ANY, port);
 	gameManager = new GameManager(gameServer);
 	gameServer->setPacketHandler(gameManager);
 	
