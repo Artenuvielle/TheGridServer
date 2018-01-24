@@ -14,7 +14,7 @@ Server::Server(unsigned int hostAdress, short port) {
 	_enetAddress.host = hostAdress;
 	_enetAddress.port = port;
 
-	_enetHost = enet_host_create (&_enetAddress, 2, 2, 0, 0);
+	_enetHost = enet_host_create (&_enetAddress, 3, 3, 0, 0);
 	if (_enetHost == NULL)
 	{
 		std::cerr << "An error occurred while trying to create an ENet server host" << std::endl;

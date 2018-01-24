@@ -78,6 +78,7 @@ GameManager::GameManager(Server* server) {
 	_aiOrange = new AI(_playerOrange);
 	_playerBluePeer = -1;
 	_playerOrangePeer = -1;
+	_spectatorPeer = -1;
 }
 
 GameManager::~GameManager() {
@@ -93,10 +94,13 @@ void GameManager::broadcastPlayerPositions(Player* player, PlayerFaction faction
 	if (_playerOrangePeer >= 0) {
 		sendPlayerPositionsToPeer(player, faction, playerId, _playerOrangePeer);
 	}
+	if (_spectatorPeer>= 0) {
+		sendPlayerPositionsToPeer(player, faction, playerId, _spectatorPeer);
+	}
 }
 
 void GameManager::sendPlayerPositionsToPeer(Player* player, PlayerFaction faction, int playerId, int peerId) {
-	PlayerFaction receivingFaction = peerId == _playerBluePeer ? PLAYER_FACTION_BLUE : PLAYER_FACTION_ORANGE;
+	PlayerFaction receivingFaction = peerId == _playerOrangePeer ? PLAYER_FACTION_ORANGE : PLAYER_FACTION_BLUE;
 	PlayerPosition* pp = new PlayerPosition();
 	pp->set_player_id(playerId);
 	pp->set_faction_id(faction);
@@ -143,9 +147,15 @@ void GameManager::handleConnect(unsigned short peerId) {
 	if (_playerBluePeer < 0) {
 		_playerBluePeer = peerId;
 		info->set_faction_id(PLAYER_FACTION_BLUE);
+		info->set_is_spectator(false);
 	} else if (_playerOrangePeer < 0) {
 		_playerOrangePeer = peerId;
 		info->set_faction_id(PLAYER_FACTION_ORANGE);
+		info->set_is_spectator(false);
+	} else if (_spectatorPeer < 0) {
+		_spectatorPeer = peerId;
+		info->set_faction_id(PLAYER_FACTION_BLUE);
+		info->set_is_spectator(true);
 	} else {
 		// new connection on full server
 		return;
@@ -163,6 +173,8 @@ void GameManager::handleDisconnect(unsigned short peerId) {
 	} else if (_playerOrangePeer == peerId) {
 		_playerOrangePeer = -1;
 		_aiOrange->resetState();
+	} else if (_spectatorPeer == peerId) {
+		_spectatorPeer = -1;
 	} else {
 		// connection not known on this server
 		return;
@@ -288,10 +300,13 @@ void GameManager::broadcastDiscThrowInformation(Player* player, PlayerFaction fa
 	if (_playerOrangePeer >= 0) {
 		sendDiscThrowInformationToPeer(player, faction, playerId, _playerOrangePeer);
 	}
+	if (_spectatorPeer >= 0) {
+		sendDiscThrowInformationToPeer(player, faction, playerId, _spectatorPeer);
+	}
 }
 
 void GameManager::sendDiscThrowInformationToPeer(Player* player, PlayerFaction faction, int playerId, int peerId) {
-	PlayerFaction receivingFaction = peerId == _playerBluePeer ? PLAYER_FACTION_BLUE : PLAYER_FACTION_ORANGE;
+	PlayerFaction receivingFaction = peerId == _playerOrangePeer ? PLAYER_FACTION_ORANGE : PLAYER_FACTION_BLUE;
 	DiskThrowInformation* dti = new DiskThrowInformation();
 	dti->set_player_id(playerId);
 	dti->set_faction_id(faction);
@@ -312,10 +327,13 @@ void GameManager::broadcastDiscPosition(Player* player, PlayerFaction faction, i
 	if (_playerOrangePeer >= 0) {
 		sendDiscPosition(player, faction, playerId, _playerOrangePeer);
 	}
+	if (_spectatorPeer>= 0) {
+		sendDiscPosition(player, faction, playerId, _spectatorPeer);
+	}
 }
 
 void GameManager::sendDiscPosition(Player* player, PlayerFaction faction, int playerId, int peerId) {
-	PlayerFaction receivingFaction = peerId == _playerBluePeer ? PLAYER_FACTION_BLUE : PLAYER_FACTION_ORANGE;
+	PlayerFaction receivingFaction = peerId == _playerOrangePeer ? PLAYER_FACTION_ORANGE : PLAYER_FACTION_BLUE;
 	DiskPosition* dp = new DiskPosition();
 	dp->set_player_id(playerId);
 	dp->set_faction_id(faction);
@@ -336,10 +354,13 @@ void GameManager::broadcastWallCollision(Player* player, PlayerFaction faction, 
 	if (_playerOrangePeer >= 0) {
 		sendWallCollision(player, faction, playerId, _playerOrangePeer);
 	}
+	if (_spectatorPeer>= 0) {
+		sendWallCollision(player, faction, playerId, _spectatorPeer);
+	}
 }
 
 void GameManager::sendWallCollision(Player* player, PlayerFaction faction, int playerId, int peerId) {
-	PlayerFaction receivingFaction = peerId == _playerBluePeer ? PLAYER_FACTION_BLUE : PLAYER_FACTION_ORANGE;
+	PlayerFaction receivingFaction = peerId == _playerOrangePeer ? PLAYER_FACTION_ORANGE : PLAYER_FACTION_BLUE;
 	WallCollisonInformation* wci = new WallCollisonInformation();
 	wci->set_player_id(playerId);
 	wci->set_faction_id(faction);

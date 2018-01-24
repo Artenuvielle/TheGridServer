@@ -35,6 +35,7 @@ private:
 	Player *_playerBlue, *_playerOrange;
 	AI *_aiBlue, *_aiOrange;
 	int _playerBluePeer, _playerOrangePeer;
+	int _spectatorPeer;
 };
 
 #endif
