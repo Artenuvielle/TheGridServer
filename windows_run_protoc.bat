@@ -4,7 +4,7 @@ for /d /r ".\proto\" %%a in (out\) do if exist "%%a" rmdir /s /q "%%a"
 cd .\proto
 mkdir .\out
 for %%f in (.\*.proto) do (
-	protoc --cpp_out=./out %%f
+	..\build_user\protobuf\exe\Release\protoc --cpp_out=./out %%f
 	move .\out\%%~nf.pb.h ..\includes\
 	move .\out\%%~nf.pb.cc ..\sources\
 	)
